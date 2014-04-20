@@ -1,6 +1,9 @@
 package com.example.gpsandriod;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -18,6 +21,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends FragmentActivity implements LocationListener {
 	private GoogleMap googleMap;
+	AlertDialog alert = null;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,10 +48,12 @@ public class MainActivity extends FragmentActivity implements LocationListener {
  
             // Getting LocationManager object from System Service LOCATION_SERVICE
             LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
- 
+            if ( !locationManager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+                AlertNoGps();
+            }
             // Creating a criteria object to retrieve provider
             Criteria criteria = new Criteria();
- 
+            
             // Getting the name of the best provider
             String provider = locationManager.getBestProvider(criteria, true);
  
@@ -105,6 +111,36 @@ public class MainActivity extends FragmentActivity implements LocationListener {
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 		// TODO Auto-generated method stub
+		
+	}
+	
+	private void AlertNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("El sistema GPS esta desactivado, ¿Desea activarlo?")
+               .setCancelable(false)
+               .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                   public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                       startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                   }
+               })
+               .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                   public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                   }
+               });
+        alert = builder.create();
+        alert.show();
+      }
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		
+		  if(alert != null) 
+		  {
+		      alert.dismiss ();
+		  }
 		
 	}
 
